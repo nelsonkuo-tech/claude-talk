@@ -79,12 +79,29 @@ claude-talk --terminals ghostty,kitty  # Custom terminal whitelist
 
 ### How it works
 
-1. Hold the hotkey (default: Option/Alt)
-2. Speak
-3. Release the key
-4. Text is transcribed locally and pasted into your terminal
+You need **two terminal windows**: one running Claude Code, and another running claude-talk.
+
+1. Open a terminal window and start Claude Code as usual
+2. Open a **second** terminal window and run `claude-talk`
+3. Switch focus back to the Claude Code window
+4. Hold the hotkey (default: Option/Alt), speak, then release
+5. Your speech is transcribed and pasted into the Claude Code input
 
 The tool only pastes when a supported terminal is focused, so it won't accidentally type into other apps.
+
+> **Tip:** Keep the claude-talk window visible to the side so you can see recording status and transcription results.
+
+---
+
+你需要**兩個終端機視窗**：一個執行 Claude Code，另一個執行 claude-talk。
+
+1. 開啟一個終端機視窗，照常啟動 Claude Code
+2. 開啟**第二個**終端機視窗，執行 `claude-talk`
+3. 將焦點切回 Claude Code 的視窗
+4. 按住快捷鍵（預設 Option/Alt）說話，放開即送出
+5. 語音會被轉錄並自動貼入 Claude Code 的輸入框
+
+> **小提示：** 建議把 claude-talk 視窗放在旁邊，方便查看錄音狀態和轉錄結果。
 
 ### Model sizes
 
