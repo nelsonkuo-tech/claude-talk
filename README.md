@@ -1,10 +1,34 @@
 # Claude Talk
 
-Press-to-talk voice input for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Hold a key, speak, and your words are transcribed and pasted into the terminal.
+Press-to-talk voice input for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-Uses [faster-whisper](https://github.com/SYSTRAN/faster-whisper) for fast, local, offline speech recognition. No API keys needed.
+Hold a key, speak, release — your voice is transcribed locally and pasted directly into the terminal. Powered by [faster-whisper](https://github.com/SYSTRAN/faster-whisper), everything runs on-device with no API keys, no cloud calls, and no data leaving your machine.
+
+**Features:**
+- Hold-to-record hotkey (default: Option/Alt, customizable)
+- Local speech-to-text via Whisper (supports 90+ languages)
+- Auto-detects language or can be pinned to one
+- Only pastes when a terminal is focused — won't leak into other apps
+- Sound feedback on record start/stop
+- Lightweight, single-command install
 
 > **macOS only** — relies on macOS Accessibility APIs, AppleScript, and system audio.
+
+---
+
+**Claude Talk** — 為 Claude Code 打造的按鍵語音輸入工具。
+
+按住快捷鍵說話、放開即完成轉錄，文字自動貼入終端機。基於 [faster-whisper](https://github.com/SYSTRAN/faster-whisper)，所有語音辨識都在本機完成，不需要 API key，不上傳任何資料。
+
+**功能特色：**
+- 按住說話、放開送出（預設 Option/Alt，可自訂）
+- 本機 Whisper 語音轉文字，支援 90+ 種語言
+- 自動偵測語言，也可指定單一語言
+- 僅在終端機獲得焦點時才貼上，不會誤輸入到其他應用
+- 錄音開始 / 結束音效回饋
+- 輕量、一行指令安裝
+
+> **僅支援 macOS** — 依賴 macOS Accessibility API、AppleScript 及系統音訊。
 
 ## Install
 
