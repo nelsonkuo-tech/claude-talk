@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-talk"
+version = "0.1.0"
+description = "Press-to-talk voice input for Claude Code"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Nelson" },
+]
+keywords = ["claude-code", "voice", "whisper", "speech-to-text", "press-to-talk"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: MacOS X",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "faster-whisper>=1.0.0",
+    "sounddevice>=0.4.6",
+    "numpy>=1.24.0",
+    "pynput>=1.7.6",
+]
+
+[project.scripts]
+claude-talk = "claude_talk.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/nelsonkuo-tech/claude-talk"
+Issues = "https://github.com/nelsonkuo-tech/claude-talk/issues"
