@@ -302,5 +302,11 @@ targets:
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGN_ENTITLEMENTS: ""
+        SWIFT_OBJC_BRIDGING_HEADER: ""
+        HEADER_SEARCH_PATHS:
+          - "$(SRCROOT)/whisper.cpp/include"
+          - "$(SRCROOT)/whisper.cpp/ggml/include"
+          - "$(SRCROOT)/whisper.cpp/ggml/src"
+          - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
     dependencies:
       - target: ClaudeTalk
