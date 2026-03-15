@@ -19,18 +19,274 @@ targets:
       - path: ClaudeTalk
         excludes:
           - "**/.gitkeep"
+      - path: whisper.cpp/src/whisper.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/ggml.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-alloc.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/ggml-backend.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-backend-reg.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-opt.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-threading.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-quants.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/gguf.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-std=c++17"
+      # ggml-cpu sources
+      - path: whisper.cpp/ggml/src/ggml-cpu/ggml-cpu.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/ggml-cpu/ggml-cpu.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/repack.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/hbm.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/quants.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/ggml-cpu/traits.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/binary-ops.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/unary-ops.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/vec.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/ops.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_ACCELERATE"
+          - "-DACCELERATE_NEW_LAPACK"
+          - "-DACCELERATE_LAPACK_ILP64"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/llamafile/sgemm.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-DGGML_USE_LLAMAFILE"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/amx/amx.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      - path: whisper.cpp/ggml/src/ggml-cpu/amx/mmq.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      # ARM arch-specific sources (for Apple Silicon)
+      - path: whisper.cpp/ggml/src/ggml-cpu/arch/arm/quants.c
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c11"
+      - path: whisper.cpp/ggml/src/ggml-cpu/arch/arm/repack.cpp
+        buildPhase: sources
+        compilerFlags:
+          - "-O3"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "-std=c++17"
+      # Metal backend (uncomment when Metal Toolchain is installed via:
+      #   xcodebuild -downloadComponent MetalToolchain)
+      # - path: whisper.cpp/ggml/src/ggml-metal/ggml-metal.m
+      #   buildPhase: sources
+      #   compilerFlags:
+      #     - "-O3"
+      #     - "-DGGML_USE_METAL"
+      #     - "-I$(SRCROOT)/whisper.cpp/ggml/include"
+      #     - "-I$(SRCROOT)/whisper.cpp/ggml/src"
+      #     - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-metal"
+      #     - "-fno-objc-arc"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.claude-talk.app
         INFOPLIST_FILE: ClaudeTalk/App/Info.plist
-        SWIFT_OBJC_BRIDGING_HEADER: ""
+        SWIFT_OBJC_BRIDGING_HEADER: "ClaudeTalk-Bridging-Header.h"
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGN_ENTITLEMENTS: ""
         ENABLE_HARDENED_RUNTIME: "NO"
+        HEADER_SEARCH_PATHS:
+          - "$(SRCROOT)/whisper.cpp/include"
+          - "$(SRCROOT)/whisper.cpp/ggml/include"
+          - "$(SRCROOT)/whisper.cpp/ggml/src"
+          - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
+          - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-metal"
+        GCC_PREPROCESSOR_DEFINITIONS:
+          - "GGML_USE_CPU=1"
+          - "GGML_USE_ACCELERATE=1"
+          - "ACCELERATE_NEW_LAPACK=1"
+          - "ACCELERATE_LAPACK_ILP64=1"
+          - "GGML_USE_LLAMAFILE=1"
+        OTHER_LDFLAGS:
+          - "-framework Accelerate"
+          - "-framework Foundation"
     scheme:
       testTargets:
         - ClaudeTalkTests
+    # preBuildScripts:
+    #   - name: "Compile Metal Shaders"
+    #     script: |
+    #       METAL_SRC="${SRCROOT}/whisper.cpp/ggml/src/ggml-metal/ggml-metal.metal"
+    #       METAL_IMPL="${SRCROOT}/whisper.cpp/ggml/src/ggml-metal/ggml-metal-impl.h"
+    #       COMMON_H="${SRCROOT}/whisper.cpp/ggml/src/ggml-common.h"
+    #       MERGED="${DERIVED_FILE_DIR}/ggml-metal-merged.metal"
+    #       sed -e "/__embed_ggml-common.h__/r ${COMMON_H}" -e "/__embed_ggml-common.h__/d" < "${METAL_SRC}" > "${DERIVED_FILE_DIR}/ggml-metal-tmp.metal"
+    #       sed -e "/\#include \"ggml-metal-impl.h\"/r ${METAL_IMPL}" -e "/\#include \"ggml-metal-impl.h\"/d" < "${DERIVED_FILE_DIR}/ggml-metal-tmp.metal" > "${MERGED}"
+    #       xcrun -sdk macosx metal -O3 -c "${MERGED}" -o "${DERIVED_FILE_DIR}/ggml-metal.air"
+    #       xcrun -sdk macosx metallib "${DERIVED_FILE_DIR}/ggml-metal.air" -o "${BUILT_PRODUCTS_DIR}/default.metallib"
+    #     inputFiles:
+    #       - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-metal/ggml-metal.metal"
+    #       - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-metal/ggml-metal-impl.h"
+    #       - "$(SRCROOT)/whisper.cpp/ggml/src/ggml-common.h"
+    #     outputFiles:
+    #       - "$(BUILT_PRODUCTS_DIR)/default.metallib"
 
   ClaudeTalkTests:
     type: bundle.unit-test
@@ -42,5 +298,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.claude-talk.app.tests
         BUNDLE_LOADER: "$(TEST_HOST)"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ClaudeTalk.app/Contents/MacOS/ClaudeTalk"
+        GENERATE_INFOPLIST_FILE: "YES"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_ENTITLEMENTS: ""
     dependencies:
       - target: ClaudeTalk

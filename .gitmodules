@@ -1,0 +1,3 @@
+[submodule "ClaudeTalk/whisper.cpp"]
+	path = ClaudeTalk/whisper.cpp
+	url = https://github.com/ggerganov/whisper.cpp.git
