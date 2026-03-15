@@ -1,28 +1,55 @@
-import Cocoa
+import AppKit
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-
-    private var statusItem: NSStatusItem!
+class AppDelegate: NSObject, NSApplicationDelegate, MenuBarDelegate, OnboardingDelegate {
+    private let menuBar = MenuBarController()
+    private let orchestrator = RecordingOrchestrator()
+    private let modelManager = ModelManager()
+    private var onboarding: OnboardingWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        setupMenuBarIcon()
-    }
-
-    private func setupMenuBarIcon() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-        if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "ClaudeTalk")
+        // 1. Check accessibility permission
+        if !AXIsProcessTrusted() {
+            let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeRetainedValue(): true]
+            AXIsProcessTrustedWithOptions(options)
         }
 
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "ClaudeTalk", action: nil, keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
-        statusItem.menu = menu
+        // 2. Setup menu bar
+        menuBar.setup()
+        menuBar.delegate = self
+
+        if !AXIsProcessTrusted() {
+            menuBar.showPermissionWarning()
+        }
+
+        // 3. Check model and start or show onboarding
+        let model = Settings.shared.modelSize
+        if modelManager.isDownloaded(model) {
+            orchestrator.start()
+        } else {
+            let window = OnboardingWindow()
+            window.onboardingDelegate = self
+            onboarding = window
+            window.startSetup()
+        }
     }
 
-    @objc private func quitApp() {
-        NSApplication.shared.terminate(nil)
+    func applicationWillTerminate(_ notification: Notification) {
+        orchestrator.stop()
+    }
+
+    // MARK: - MenuBarDelegate
+
+    func menuBarDidChangeSettings() {
+        orchestrator.reloadSettings()
+    }
+
+    // MARK: - OnboardingDelegate
+
+    func onboardingDidComplete() {
+        onboarding = nil
+        if AXIsProcessTrusted() {
+            menuBar.clearPermissionWarning()
+        }
+        orchestrator.start()
     }
 }
