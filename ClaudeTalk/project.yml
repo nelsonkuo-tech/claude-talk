@@ -1,0 +1,46 @@
+name: ClaudeTalk
+options:
+  bundleIdPrefix: com.claude-talk
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+targets:
+  ClaudeTalk:
+    type: application
+    platform: macOS
+    sources:
+      - path: ClaudeTalk
+        excludes:
+          - "**/.gitkeep"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.claude-talk.app
+        INFOPLIST_FILE: ClaudeTalk/App/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: ""
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_ENTITLEMENTS: ""
+        ENABLE_HARDENED_RUNTIME: "NO"
+    scheme:
+      testTargets:
+        - ClaudeTalkTests
+
+  ClaudeTalkTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: ClaudeTalkTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.claude-talk.app.tests
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ClaudeTalk.app/Contents/MacOS/ClaudeTalk"
+    dependencies:
+      - target: ClaudeTalk
