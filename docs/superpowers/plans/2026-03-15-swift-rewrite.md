@@ -330,6 +330,11 @@ class Settings {
         get { defaults.string(forKey: "pillStyle") ?? "solid" }
         set { defaults.set(newValue, forKey: "pillStyle") }
     }
+
+    var promptHint: String {
+        get { defaults.string(forKey: "promptHint") ?? "以下是中英文夹杂的内容。Contains both Chinese and English." }
+        set { defaults.set(newValue, forKey: "promptHint") }
+    }
 }
 ```
 
@@ -397,6 +402,12 @@ final class PostProcessorTests: XCTestCase {
         XCTAssertEqual(processor.process("um hello", enabled: false), "um hello")
         XCTAssertEqual(processor.process("um hello", enabled: true), "hello")
     }
+
+    func testCustomDictionary() {
+        let dict = ["克劳德": "Claude", "吉特": "Git", "皮埃": "PR"]
+        XCTAssertEqual(processor.applyDictionary("用克劳德來寫吉特", dictionary: dict), "用Claude來寫Git")
+        XCTAssertEqual(processor.applyDictionary("hello world", dictionary: dict), "hello world")
+    }
 }
 ```
 
@@ -447,9 +458,43 @@ struct PostProcessor {
         return result.trimmingCharacters(in: .whitespaces)
     }
 
-    func process(_ text: String, enabled: Bool) -> String {
-        guard enabled else { return text }
-        return removeFillers(text)
+    func applyDictionary(_ text: String, dictionary: [String: String]) -> String {
+        var result = text
+        for (wrong, correct) in dictionary {
+            result = result.replacingOccurrences(of: wrong, with: correct)
+        }
+        return result
+    }
+
+    func process(_ text: String, enabled: Bool, dictionary: [String: String] = [:]) -> String {
+        var result = text
+        if enabled {
+            result = removeFillers(result)
+        }
+        if !dictionary.isEmpty {
+            result = applyDictionary(result, dictionary: dictionary)
+        }
+        return result
+    }
+
+    /// Load custom dictionary from ~/Library/Application Support/Claude Talk/dictionary.json
+    static func loadDictionary() -> [String: String] {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let path = appSupport.appendingPathComponent("Claude Talk/dictionary.json")
+        guard let data = try? Data(contentsOf: path),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data) else {
+            // Write default dictionary on first access
+            let defaults: [String: String] = [
+                "克劳德": "Claude", "吉特": "Git", "皮埃": "PR",
+                "艾皮艾": "API", "蒂普洛伊": "deploy", "可米特": "commit",
+                "普什": "push", "普爾": "pull"
+            ]
+            let dir = appSupport.appendingPathComponent("Claude Talk")
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try? JSONEncoder().encode(defaults).write(to: path)
+            return defaults
+        }
+        return dict
     }
 }
 ```
@@ -671,7 +716,7 @@ class WhisperWrapper {
         }
     }
 
-    func transcribe(samples: [Float], language: String? = nil, beamSize: Int32 = 5) -> String {
+    func transcribe(samples: [Float], language: String? = nil, beamSize: Int32 = 5, promptHint: String? = nil) -> String {
         guard let ctx = context else { return "" }
 
         var params = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH)
@@ -680,20 +725,28 @@ class WhisperWrapper {
         params.print_progress = false
         params.print_timestamps = false
 
-        // Run whisper_full inside withCString to keep the language pointer alive
-        let runTranscription = { (langPtr: UnsafePointer<CChar>?) -> Int32 in
+        // Run whisper_full inside withCString to keep pointers alive
+        let runTranscription = { (langPtr: UnsafePointer<CChar>?, promptPtr: UnsafePointer<CChar>?) -> Int32 in
             var p = params
             p.language = langPtr
+            p.initial_prompt = promptPtr
             return samples.withUnsafeBufferPointer { bufferPointer in
                 whisper_full(ctx, p, bufferPointer.baseAddress, Int32(samples.count))
             }
         }
 
         let result: Int32
-        if let lang = language {
-            result = lang.withCString { cStr in runTranscription(cStr) }
+        let callWithPrompt = { (promptPtr: UnsafePointer<CChar>?) -> Int32 in
+            if let lang = language {
+                return lang.withCString { langPtr in runTranscription(langPtr, promptPtr) }
+            } else {
+                return runTranscription(nil, promptPtr)
+            }
+        }
+        if let prompt = promptHint, !prompt.isEmpty {
+            result = prompt.withCString { promptPtr in callWithPrompt(promptPtr) }
         } else {
-            result = runTranscription(nil)
+            result = callWithPrompt(nil)
         }
 
         guard result == 0 else { return "" }
@@ -1912,9 +1965,15 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             #else
             let beamSize: Int32 = 3  // Reduce for Intel Macs
             #endif
-            let text = whisper.transcribe(samples: result.samples, language: self.settings.language, beamSize: beamSize)
+            let text = whisper.transcribe(
+                samples: result.samples,
+                language: self.settings.language,
+                beamSize: beamSize,
+                promptHint: self.settings.promptHint
+            )
 
-            let processed = self.postProcessor.process(text, enabled: self.settings.removeFillerWords)
+            let dictionary = PostProcessor.loadDictionary()
+            let processed = self.postProcessor.process(text, enabled: self.settings.removeFillerWords, dictionary: dictionary)
 
             DispatchQueue.main.async {
                 if processed.isEmpty {

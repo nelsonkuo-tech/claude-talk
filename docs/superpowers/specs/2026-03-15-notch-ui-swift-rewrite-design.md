@@ -204,6 +204,7 @@ Store settings in `UserDefaults`. Keys:
 - `accentColor` (String, default: "white")
 - `waveformStyle` (String, default: "bars")
 - `pillStyle` (String, default: "solid")
+- `promptHint` (String, default: "以下是中英文夹杂的内容。Contains both Chinese and English.")
 
 ## Post-Processing: Filler Word Removal
 
@@ -216,6 +217,41 @@ When enabled, apply rule-based removal after transcription, before pasting:
 `um`, `uh`, `uh huh`, `like`, `you know`, `I mean`, `basically`, `actually`, `so yeah`, `right`
 
 Implementation: Simple regex/string replacement. Match whole words only (English) or standalone characters (Chinese). Do not use AI for this — rules are sufficient and keep it fast.
+
+### Custom Dictionary (Misrecognition Fix)
+
+After filler word removal, apply a user-editable dictionary to fix common misrecognitions, especially for code-switching (中英夹杂) scenarios:
+
+Built-in defaults:
+```
+克劳德 → Claude
+吉特 → Git
+皮埃 → PR
+艾皮艾 → API
+蒂普洛伊 → deploy
+可米特 → commit
+普什 → push
+普爾 → pull
+```
+
+- Stored as JSON in `~/Library/Application Support/Claude Talk/dictionary.json`
+- Users can edit this file to add their own terms
+- Menu Bar shows "Edit Dictionary..." item that opens the file in default editor
+- Applied as simple string replacement after filler word removal
+
+## Whisper Prompt Hint (Code-Switching Optimization)
+
+whisper.cpp supports `initial_prompt` to hint the model about expected content. This significantly improves code-switching accuracy.
+
+Default prompt:
+```
+以下是中英文夹杂的内容。Contains both Chinese and English technical terms like Claude Code, git, commit, API, deploy, PR, terminal.
+```
+
+- Stored in Settings as `promptHint` (String)
+- Menu Bar shows current prompt hint, editable via "Edit Prompt Hint..." (opens small text input dialog)
+- Users can customize with their own frequently-used technical terms
+- Set to empty string to disable
 
 ## Audio Pipeline
 
