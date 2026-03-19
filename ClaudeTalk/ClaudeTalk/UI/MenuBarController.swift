@@ -65,6 +65,12 @@ class MenuBarController {
             submenu: buildTerminalsMenu()
         ))
 
+        // Recording Mode
+        menu.addItem(makeSubmenuItem(
+            title: "Recording: \(settings.recordingMode == "hold" ? "Hold" : "Toggle")",
+            submenu: buildRecordingModeMenu()
+        ))
+
         menu.addItem(.separator())
 
         // Appearance submenu
@@ -177,11 +183,47 @@ class MenuBarController {
 
     private func buildAppearanceMenu() -> NSMenu {
         let menu = NSMenu()
-        // Liquid Glass handles styling natively — no manual options needed
-        let info = NSMenuItem(title: "Liquid Glass (System)", action: nil, keyEquivalent: "")
-        info.isEnabled = false
-        menu.addItem(info)
+        let options: [(value: String, label: String)] = [
+            ("auto", "Auto (Follow Background)"),
+            ("light", "Light Glass"),
+            ("dark", "Dark Glass"),
+        ]
+        for option in options {
+            let item = NSMenuItem(title: option.label, action: #selector(selectGlassStyle(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = option.value
+            item.state = settings.glassStyle == option.value ? .on : .off
+            menu.addItem(item)
+        }
         return menu
+    }
+
+    private func buildRecordingModeMenu() -> NSMenu {
+        let menu = NSMenu()
+        let options: [(value: String, label: String)] = [
+            ("hold", "Hold to Record"),
+            ("toggle", "Tap to Start / Tap to Stop"),
+        ]
+        for option in options {
+            let item = NSMenuItem(title: option.label, action: #selector(selectRecordingMode(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = option.value
+            item.state = settings.recordingMode == option.value ? .on : .off
+            menu.addItem(item)
+        }
+        return menu
+    }
+
+    @objc private func selectRecordingMode(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? String else { return }
+        settings.recordingMode = value
+        rebuildMenu()
+    }
+
+    @objc private func selectGlassStyle(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? String else { return }
+        settings.glassStyle = value
+        rebuildMenu()
     }
 
     // MARK: - Helpers

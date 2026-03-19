@@ -90,4 +90,16 @@ final class Settings {
         get { defaults.string(forKey: Key.promptHint) ?? "以下是中英文夹杂的内容。Contains both Chinese and English." }
         set { defaults.set(newValue, forKey: Key.promptHint) }
     }
+
+    // Recording mode: "hold" (hold to record) or "toggle" (tap to start/stop)
+    var recordingMode: String {
+        get { defaults.string(forKey: "recordingMode") ?? "hold" }
+        set { defaults.set(newValue, forKey: "recordingMode") }
+    }
+
+    // Glass style: "auto", "light", "dark"
+    var glassStyle: String {
+        get { defaults.string(forKey: "glassStyle") ?? "auto" }
+        set { defaults.set(newValue, forKey: "glassStyle") }
+    }
 }

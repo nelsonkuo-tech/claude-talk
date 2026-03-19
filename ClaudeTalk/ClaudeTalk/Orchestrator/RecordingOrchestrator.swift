@@ -13,6 +13,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
     private var transcriptionService: TranscriptionService?
     private let modelManager = ModelManager()
     private var isTranscribing = false
+    private var isToggleRecording = false  // tracks toggle mode state
 
     init() {
         hotkeyManager = HotkeyManager(hotkey: settings.hotkey)
@@ -40,6 +41,8 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             loadWhisperCpp()
         }
 
+        notchOverlay.model.glassStyle = settings.glassStyle
+
         let started = hotkeyManager.start()
         NSLog("[ClaudeTalk] Hotkey manager started: %@", started ? "YES" : "NO")
         NSLog("[ClaudeTalk] Accessibility trusted: %@", AXIsProcessTrusted() ? "YES" : "NO")
@@ -52,12 +55,42 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
     func reloadSettings() {
         hotkeyManager.updateHotkey(settings.hotkey)
+        notchOverlay.model.glassStyle = settings.glassStyle
     }
 
     // MARK: - HotkeyManagerDelegate
 
     func hotkeyDidPress() {
         NSLog("[ClaudeTalk] Hotkey pressed!")
+
+        if settings.recordingMode == "toggle" {
+            // Toggle mode: press once to start, press again to stop
+            if isToggleRecording {
+                // Second press: stop recording
+                isToggleRecording = false
+                stopAndTranscribe()
+                return
+            }
+
+            // First press: start recording
+            guard !isTranscribing else { NSLog("[ClaudeTalk] Skipped: still transcribing"); return }
+            let focused = NSWorkspace.shared.frontmostApplication?.localizedName ?? "unknown"
+            NSLog("[ClaudeTalk] Focused app: %@", focused)
+            guard terminalDetector.isFocusedAppTerminal() else { NSLog("[ClaudeTalk] Skipped: %@ not in terminal whitelist", focused); return }
+
+            do {
+                try audioEngine.startRecording()
+                isToggleRecording = true
+            } catch {
+                NSLog("[ClaudeTalk] Recording failed: %@", error.localizedDescription)
+                notchOverlay.state = .error
+                return
+            }
+            notchOverlay.state = .recording
+            return
+        }
+
+        // Hold mode: press to start
         guard !isTranscribing else { NSLog("[ClaudeTalk] Skipped: still transcribing"); return }
         let focused = NSWorkspace.shared.frontmostApplication?.localizedName ?? "unknown"
         NSLog("[ClaudeTalk] Focused app: %@", focused)
@@ -75,7 +108,14 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
     }
 
     func hotkeyDidRelease() {
+        // Toggle mode ignores release
+        if settings.recordingMode == "toggle" { return }
+
         NSLog("[ClaudeTalk] Hotkey released!")
+        stopAndTranscribe()
+    }
+
+    private func stopAndTranscribe() {
         guard let result = audioEngine.stopRecording() else {
             notchOverlay.state = .discarded
             return
@@ -115,6 +155,10 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
     func audioEngine(_ engine: AudioEngine, didUpdateRMS rms: Float) {
         notchOverlay.updateRMS(rms)
+    }
+
+    func audioEngine(_ engine: AudioEngine, didUpdateSpectrum bands: [Float]) {
+        notchOverlay.model.updateSpectrum(bands)
     }
 
     // MARK: - Transcription

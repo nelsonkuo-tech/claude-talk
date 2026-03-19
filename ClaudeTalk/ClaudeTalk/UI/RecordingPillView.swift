@@ -5,9 +5,11 @@ struct RecordingPillView: View {
 
     private let iconSize: CGFloat = 48
     private let barCount = 7
-    private let maxBarHeight: CGFloat = 28
+    private let maxBarHeight: CGFloat = 20
     private let barWidth: CGFloat = 3.5
     private let barSpacing: CGFloat = 3
+
+    private let activeGreen = Color(red: 0.3, green: 0.95, blue: 0.4)
 
     var body: some View {
         let isActive = model.state == .recording || model.state == .transcribing
@@ -28,6 +30,7 @@ struct RecordingPillView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .modifier(GlassStyleModifier(style: model.glassStyle))
         .animation(.smooth(duration: 0.3), value: model.state)
     }
 
@@ -49,11 +52,11 @@ struct RecordingPillView: View {
                 .foregroundStyle(.white)
         case .recording, .transcribing:
             Image(systemName: "mic.fill")
-                .foregroundStyle(.green)
+                .foregroundStyle(activeGreen)
                 .symbolEffect(.pulse, isActive: model.state == .transcribing)
         case .done:
             Image(systemName: "checkmark")
-                .foregroundStyle(.green)
+                .foregroundStyle(activeGreen)
                 .fontWeight(.bold)
         case .error:
             Image(systemName: "xmark")
@@ -65,26 +68,43 @@ struct RecordingPillView: View {
     // MARK: - Waveform Capsule
 
     private var waveformCapsule: some View {
-        HStack(spacing: barSpacing) {
-            ForEach(0..<barCount, id: \.self) { i in
-                RoundedRectangle(cornerRadius: barWidth / 2)
-                    .fill(.white)
-                    .frame(
-                        width: barWidth,
-                        height: barHeight(for: i)
-                    )
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { _ in
+            HStack(spacing: barSpacing) {
+                ForEach(0..<barCount, id: \.self) { i in
+                    RoundedRectangle(cornerRadius: barWidth / 2)
+                        .fill(.white)
+                        .frame(
+                            width: barWidth,
+                            height: barHeight(for: i)
+                        )
+                }
             }
         }
         .frame(height: 36)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .glassEffect(.regular, in: .capsule)
-        .animation(.smooth(duration: 0.06), value: model.barLevels)
     }
 
     private func barHeight(for index: Int) -> CGFloat {
         let minHeight: CGFloat = 6
         let level = model.barLevels[index]
         return max(minHeight, level * maxBarHeight)
+    }
+}
+
+// Force Liquid Glass light/dark via color scheme environment
+struct GlassStyleModifier: ViewModifier {
+    let style: String
+
+    func body(content: Content) -> some View {
+        switch style {
+        case "light":
+            content.environment(\.colorScheme, .light)
+        case "dark":
+            content.environment(\.colorScheme, .dark)
+        default:
+            content
+        }
     }
 }
