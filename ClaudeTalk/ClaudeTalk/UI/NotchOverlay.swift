@@ -1,29 +1,13 @@
 import AppKit
-
-enum NotchState {
-    case idle, recording, transcribing, success, error, discarded
-}
+import SwiftUI
 
 class NotchOverlay {
     private var panel: NSPanel?
-    private(set) var contentView: NotchContentView?
+    let model = RecordingPillModel()
 
-    private let pillWidth: CGFloat = 280
-    private let pillHeight: CGFloat = 36
-    private let cornerRadius: CGFloat = 20
+    private let panelWidth: CGFloat = 300
+    private let panelHeight: CGFloat = 80
     private let animationDuration: TimeInterval = 0.3
-
-    private var restPosition: NSPoint = .zero
-    private var showPosition: NSPoint = .zero
-
-    var state: NotchState = .idle {
-        didSet { handleStateChange(from: oldValue, to: state) }
-    }
-
-    private var hasNotch: Bool {
-        guard let screen = NSScreen.main else { return false }
-        return screen.safeAreaInsets.top > 0
-    }
 
     init() {
         setupPanel()
@@ -33,157 +17,120 @@ class NotchOverlay {
 
     private func setupPanel() {
         guard let screen = NSScreen.main else { return }
-
         let screenFrame = screen.frame
-        calculatePositions(screenFrame: screenFrame, safeAreaInsets: screen.safeAreaInsets)
 
-        let initialFrame = NSRect(origin: restPosition, size: CGSize(width: pillWidth, height: pillHeight))
+        // Position: centered horizontally, directly below the notch
+        let notchHeight = screen.safeAreaInsets.top
+        let windowOrigin = NSPoint(
+            x: screenFrame.origin.x + (screenFrame.width - panelWidth) / 2,
+            y: screenFrame.maxY - notchHeight - panelHeight - 4
+        )
+        let windowFrame = NSRect(
+            origin: windowOrigin,
+            size: CGSize(width: panelWidth, height: panelHeight)
+        )
+
         let panel = NSPanel(
-            contentRect: initialFrame,
+            contentRect: windowFrame,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: true
         )
 
-        panel.level = .statusBar
+        panel.level = .floating
         panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
 
-        // Create container view with rounded bottom corners only
-        let containerView = NSView(frame: NSRect(origin: .zero, size: CGSize(width: pillWidth, height: pillHeight)))
-        containerView.wantsLayer = true
-        containerView.layer?.masksToBounds = true
-        containerView.layer?.cornerRadius = cornerRadius
-        containerView.layer?.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        let swiftUIView = RecordingPillView(model: model)
+        let hostingView = NSHostingView(rootView: swiftUIView)
+        hostingView.frame = NSRect(origin: .zero, size: windowFrame.size)
+        hostingView.autoresizingMask = [.width, .height]
 
-        // Create content view
-        let content = NotchContentView(frame: containerView.bounds)
-        content.autoresizingMask = [.width, .height]
-        containerView.addSubview(content)
-        self.contentView = content
-
-        panel.contentView = containerView
+        panel.contentView = hostingView
         self.panel = panel
+
+        NSLog("[ClaudeTalk] NotchOverlay panel: frame=%@, notchHeight=%.0f",
+              NSStringFromRect(windowFrame), notchHeight)
     }
 
-    private func calculatePositions(screenFrame: NSRect, safeAreaInsets: NSEdgeInsets) {
-        let centerX = screenFrame.midX - pillWidth / 2
+    // MARK: - State
 
-        if hasNotch {
-            // Place pill directly below the notch safe area
-            let yVisible = screenFrame.maxY - safeAreaInsets.top - pillHeight
-            showPosition = NSPoint(x: centerX, y: yVisible)
-        } else {
-            // Place pill just below the top of screen with small gap
-            let yVisible = screenFrame.maxY - pillHeight - 4
-            showPosition = NSPoint(x: centerX, y: yVisible)
+    var state: NotchState = .idle {
+        didSet { handleStateChange(from: oldValue, to: state) }
+    }
+
+    private func handleStateChange(from oldState: NotchState, to newState: NotchState) {
+        switch newState {
+        case .idle:
+            model.transitionTo(.idle)
+            hidePanel()
+
+        case .recording:
+            model.transitionTo(.recording)
+            showPanel()
+
+        case .transcribing:
+            model.transitionTo(.transcribing)
+
+        case .success:
+            model.transitionTo(.done)
+            NSSound(named: "Pop")?.play()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.hidePanel()
+            }
+
+        case .error:
+            model.transitionTo(.error)
+            NSSound(named: "Basso")?.play()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.hidePanel()
+            }
+
+        case .discarded:
+            model.transitionTo(.idle)
+            hidePanel(animated: false)
         }
-
-        // Rest position: pill hidden above screen edge
-        restPosition = NSPoint(x: showPosition.x, y: screenFrame.maxY + 2)
     }
 
     // MARK: - Panel Visibility
 
     private func showPanel() {
         guard let panel = panel else { return }
-
-        // Reset to rest position before animating in
-        var frame = panel.frame
-        frame.origin = restPosition
-        panel.setFrame(frame, display: false)
-
+        panel.alphaValue = 1
         panel.orderFront(nil)
-
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = animationDuration
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            var targetFrame = panel.frame
-            targetFrame.origin = showPosition
-            panel.animator().setFrame(targetFrame, display: true)
-        }
     }
 
     private func hidePanel(animated: Bool = true) {
         guard let panel = panel else { return }
 
-        if animated {
-            NSAnimationContext.runAnimationGroup({ context in
-                context.duration = animationDuration
-                context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-                var targetFrame = panel.frame
-                targetFrame.origin = restPosition
-                panel.animator().setFrame(targetFrame, display: true)
-            }, completionHandler: {
-                panel.orderOut(nil)
-            })
-        } else {
+        if !animated {
             panel.orderOut(nil)
-        }
-    }
-
-    // MARK: - Visual Style
-
-    private func applyPillStyle(_ style: String) {
-        guard let containerView = panel?.contentView else { return }
-
-        // Remove any existing effect views
-        for subview in containerView.subviews where subview is NSVisualEffectView {
-            subview.removeFromSuperview()
+            return
         }
 
-        if style == "frosted" {
-            let effectView = NSVisualEffectView(frame: containerView.bounds)
-            effectView.material = .dark
-            effectView.blendingMode = .behindWindow
-            effectView.state = .active
-            effectView.autoresizingMask = [.width, .height]
-            effectView.wantsLayer = true
-
-            // Insert behind content view
-            containerView.addSubview(effectView, positioned: .below, relativeTo: contentView)
-            containerView.layer?.backgroundColor = NSColor.clear.cgColor
-        } else {
-            // Solid black background
-            containerView.layer?.backgroundColor = NSColor.black.cgColor
-        }
-    }
-
-    // MARK: - State Handling
-
-    private func handleStateChange(from oldState: NotchState, to newState: NotchState) {
-        switch newState {
-        case .idle:
-            hidePanel()
-        case .recording:
-            showPanel()
-            contentView?.showRecording()
-        case .transcribing:
-            contentView?.showTranscribing()
-        case .success:
-            NSSound(named: "Pop")?.play()
-            hidePanel()
-        case .error:
-            NSSound(named: "Basso")?.play()
-            hidePanel()
-        case .discarded:
-            hidePanel(animated: false)
-        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = animationDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0
+        }, completionHandler: {
+            panel.orderOut(nil)
+        })
     }
 
     // MARK: - Public Interface
 
     func updateRMS(_ rms: Float) {
-        contentView?.updateRMS(rms)
+        model.updateRMS(rms)
     }
 
     func configure(waveformStyle: String, accentColor: NSColor, pillStyle: String) {
-        contentView?.configure(waveformStyle: waveformStyle, accentColor: accentColor)
-        applyPillStyle(pillStyle)
+        // Glass effect handles styling natively
     }
 }
 
-// NotchContentView is defined in NotchContentView.swift
+enum NotchState: Int {
+    case idle = 0, recording = 1, transcribing = 2, success = 3, error = 4, discarded = 5
+}

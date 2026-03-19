@@ -177,57 +177,10 @@ class MenuBarController {
 
     private func buildAppearanceMenu() -> NSMenu {
         let menu = NSMenu()
-
-        // Accent Color
-        menu.addItem(makeSubmenuItem(title: "Accent Color", submenu: buildAccentColorMenu()))
-
-        // Waveform Style
-        menu.addItem(makeSubmenuItem(title: "Waveform Style", submenu: buildWaveformStyleMenu()))
-
-        // Pill Style
-        menu.addItem(makeSubmenuItem(title: "Pill Style", submenu: buildPillStyleMenu()))
-
-        return menu
-    }
-
-    private func buildAccentColorMenu() -> NSMenu {
-        let menu = NSMenu()
-        let options = ["white", "purple", "cyan", "green", "orange", "pink"]
-        let labels = ["White", "Purple", "Cyan", "Green", "Orange", "Pink"]
-        for (option, label) in zip(options, labels) {
-            let item = NSMenuItem(title: label, action: #selector(selectAccentColor(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = option
-            item.state = settings.accentColor == option ? .on : .off
-            menu.addItem(item)
-        }
-        return menu
-    }
-
-    private func buildWaveformStyleMenu() -> NSMenu {
-        let menu = NSMenu()
-        let options = ["bars", "dots", "line", "cat", "rabbit", "dog"]
-        let labels = ["Bars", "Dots", "Line", "🐱 Cat", "🐰 Rabbit", "🐶 Dog"]
-        for (option, label) in zip(options, labels) {
-            let item = NSMenuItem(title: label, action: #selector(selectWaveformStyle(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = option
-            item.state = settings.waveformStyle == option ? .on : .off
-            menu.addItem(item)
-        }
-        return menu
-    }
-
-    private func buildPillStyleMenu() -> NSMenu {
-        let menu = NSMenu()
-        let options = [("solid", "Solid Black"), ("frosted", "Frosted Glass")]
-        for (option, label) in options {
-            let item = NSMenuItem(title: label, action: #selector(selectPillStyle(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = option
-            item.state = settings.pillStyle == option ? .on : .off
-            menu.addItem(item)
-        }
+        // Liquid Glass handles styling natively — no manual options needed
+        let info = NSMenuItem(title: "Liquid Glass (System)", action: nil, keyEquivalent: "")
+        info.isEnabled = false
+        menu.addItem(info)
         return menu
     }
 
@@ -278,24 +231,6 @@ class MenuBarController {
             whitelist.append(terminal)
         }
         settings.terminalWhitelist = whitelist
-        rebuildMenu()
-    }
-
-    @objc private func selectAccentColor(_ sender: NSMenuItem) {
-        guard let value = sender.representedObject as? String else { return }
-        settings.accentColor = value
-        rebuildMenu()
-    }
-
-    @objc private func selectWaveformStyle(_ sender: NSMenuItem) {
-        guard let value = sender.representedObject as? String else { return }
-        settings.waveformStyle = value
-        rebuildMenu()
-    }
-
-    @objc private func selectPillStyle(_ sender: NSMenuItem) {
-        guard let value = sender.representedObject as? String else { return }
-        settings.pillStyle = value
         rebuildMenu()
     }
 

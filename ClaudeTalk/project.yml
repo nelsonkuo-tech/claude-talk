@@ -2,14 +2,14 @@ name: ClaudeTalk
 options:
   bundleIdPrefix: com.claude-talk
   deploymentTarget:
-    macOS: "14.0"
-  xcodeVersion: "16.0"
+    macOS: "26.0"
+  xcodeVersion: "17.0"
   generateEmptyDirectories: true
 
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
 
 targets:
   ClaudeTalk:
@@ -190,15 +190,7 @@ targets:
           - "-I$(SRCROOT)/whisper.cpp/ggml/src"
           - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
           - "-std=c++17"
-      - path: whisper.cpp/ggml/src/ggml-cpu/llamafile/sgemm.cpp
-        buildPhase: sources
-        compilerFlags:
-          - "-O3"
-          - "-DGGML_USE_LLAMAFILE"
-          - "-I$(SRCROOT)/whisper.cpp/ggml/include"
-          - "-I$(SRCROOT)/whisper.cpp/ggml/src"
-          - "-I$(SRCROOT)/whisper.cpp/ggml/src/ggml-cpu"
-          - "-std=c++17"
+      # llamafile sgemm removed - causes assertion failure with VAD model
       - path: whisper.cpp/ggml/src/ggml-cpu/amx/amx.cpp
         buildPhase: sources
         compilerFlags:
@@ -263,7 +255,7 @@ targets:
           - "GGML_USE_ACCELERATE=1"
           - "ACCELERATE_NEW_LAPACK=1"
           - "ACCELERATE_LAPACK_ILP64=1"
-          - "GGML_USE_LLAMAFILE=1"
+          # GGML_USE_LLAMAFILE disabled - causes assertion failure with VAD model
         OTHER_LDFLAGS:
           - "-framework Accelerate"
           - "-framework Foundation"
