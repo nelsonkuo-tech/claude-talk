@@ -8,7 +8,7 @@ Hold a key, speak, release — your voice is transcribed locally and pasted dire
 
 ## Download
 
-**[Download Claude Talk v1.0.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.0.0/ClaudeTalk-1.0.0.dmg)**
+**[Download Claude Talk v1.1.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.1.0/ClaudeTalk-1.1.0.dmg)**
 
 Open the DMG, drag ClaudeTalk to Applications, done.
 
@@ -22,7 +22,7 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 
 ## 下載
 
-**[下載 Claude Talk v1.0.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.0.0/ClaudeTalk-1.0.0.dmg)**
+**[下載 Claude Talk v1.1.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.1.0/ClaudeTalk-1.1.0.dmg)**
 
 打開 DMG，將 ClaudeTalk 拖入 Applications 資料夾即可。
 
@@ -31,11 +31,13 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 ## Features
 
 - **Native macOS app** — menu bar icon, no terminal window needed
-- **macOS 26 Liquid Glass UI** — pill-shaped overlay with glass effect
-- **Hold-to-record** — fn key (customizable via menu bar)
+- **macOS 26 Liquid Glass UI** — pill-shaped overlay with real-time FFT waveform
+- **Two recording modes** — hold-to-record or tap-to-toggle
+- **Glass style options** — Auto (follow background), Light Glass, Dark Glass
 - **Local speech-to-text** via [faster-whisper](https://github.com/SYSTRAN/faster-whisper), supports 90+ languages
 - **~0.5s transcription latency** on Apple Silicon
 - **Terminal-aware** — only pastes when a supported terminal is focused
+- **Customizable** — hotkey, model size, language, terminal whitelist
 
 ## Usage
 
@@ -44,19 +46,24 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 3. Focus on a terminal (Ghostty, iTerm2, Terminal, Warp, Kitty, etc.)
 4. **Hold fn key**, speak, **release** — text is transcribed and pasted
 
-Settings are available from the menu bar icon: hotkey, model size, language, terminal whitelist, and more.
+### Menu Bar Settings
+
+- **Hotkey** — fn, Option, F5-F12
+- **Model** — tiny, base, small, medium
+- **Language** — Auto, English, 中文, 日本語, 한국어, Español
+- **Recording mode** — Hold to Record / Tap to Start-Stop
+- **Appearance** — Auto, Light Glass, Dark Glass
+- **Terminals** — whitelist of supported terminal apps
 
 ## CLI Version
 
-The original CLI version is still available for those who prefer it:
+The original CLI version is still available:
 
 ```bash
 brew install portaudio ffmpeg
 pip install claude-talk
 claude-talk
 ```
-
-See [CLI usage details](#cli-usage) below.
 
 ## Model Sizes
 
@@ -67,21 +74,7 @@ See [CLI usage details](#cli-usage) below.
 | `small`  | ~500 MB | Medium  | Better   |
 | `medium` | ~1.5 GB | Slow    | Best     |
 
-The app ships with `base`. Use the menu bar to switch models.
-
-## CLI Usage
-
-```bash
-claude-talk                            # Hold Option/Alt to speak
-claude-talk --key f5                   # Use F5 instead
-claude-talk --language zh              # Force Chinese
-claude-talk --language en              # Force English
-claude-talk --model small              # Use a larger model
-claude-talk --no-sound                 # Disable sound feedback
-claude-talk --terminals ghostty,kitty  # Custom terminal whitelist
-```
-
-You need **two terminal windows**: one running Claude Code, and another running claude-talk. Hold the hotkey, speak, release — text is pasted into the focused terminal.
+The app ships with `base`. Switch models from the menu bar.
 
 ## Build from Source
 
