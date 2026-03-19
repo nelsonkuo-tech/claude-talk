@@ -8,7 +8,7 @@ Hold a key, speak, release — your voice is transcribed locally and pasted dire
 
 ## Download
 
-**[Download Claude Talk v1.1.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.1.0/ClaudeTalk-1.1.0.dmg)**
+**[Download Claude Talk v1.2.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.2.0/ClaudeTalk-1.1.0.dmg)**
 
 Open the DMG, drag ClaudeTalk to Applications, done.
 
@@ -22,7 +22,7 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 
 ## 下載
 
-**[下載 Claude Talk v1.1.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.1.0/ClaudeTalk-1.1.0.dmg)**
+**[下載 Claude Talk v1.2.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.2.0/ClaudeTalk-1.1.0.dmg)**
 
 打開 DMG，將 ClaudeTalk 拖入 Applications 資料夾即可。
 

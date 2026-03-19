@@ -8,13 +8,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, MenuBarDelegate, OnboardingD
     private var accessibilityTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 1. Prompt accessibility if not trusted (non-blocking)
+        // 1. Check accessibility — open System Settings if not trusted
         if !AXIsProcessTrusted() {
-            let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true]
-            AXIsProcessTrustedWithOptions(options)
+            promptAccessibility()
         }
 
-        // 2. Setup menu bar — always show normal icon first
+        // 2. Setup menu bar
         menuBar.setup()
         menuBar.delegate = self
 
@@ -29,7 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, MenuBarDelegate, OnboardingD
             window.startSetup()
         }
 
-        // 4. Periodically check accessibility and update icon
+        // 4. Monitor accessibility until granted
         startAccessibilityMonitor()
     }
 
@@ -38,20 +37,40 @@ class AppDelegate: NSObject, NSApplicationDelegate, MenuBarDelegate, OnboardingD
         orchestrator.stop()
     }
 
-    // MARK: - Accessibility Monitor
+    // MARK: - Accessibility
+
+    private func promptAccessibility() {
+        // Show system prompt
+        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true]
+        AXIsProcessTrustedWithOptions(options)
+
+        // Also open System Settings directly to Accessibility pane
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+
+        // Show notification
+        let alert = NSAlert()
+        alert.messageText = "Accessibility Permission Required"
+        alert.informativeText = "Claude Talk needs Accessibility permission to capture hotkeys.\n\nPlease enable Claude Talk in:\nSystem Settings → Privacy & Security → Accessibility"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
 
     private func startAccessibilityMonitor() {
-        // Check every 2 seconds until trusted, then stop
         accessibilityTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] timer in
             let trusted = AXIsProcessTrusted()
-            NSLog("[ClaudeTalk] Accessibility check: %@", trusted ? "YES" : "NO")
             if trusted {
                 self?.menuBar.clearPermissionWarning()
                 timer.invalidate()
                 self?.accessibilityTimer = nil
+                NSLog("[ClaudeTalk] Accessibility granted")
+            } else {
+                self?.menuBar.showPermissionWarning()
             }
-            // Don't show warning icon — unreliable during development
-            // due to code signature changes on each rebuild
         }
     }
 

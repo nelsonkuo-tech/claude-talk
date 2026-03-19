@@ -240,10 +240,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.claude-talk.app
         INFOPLIST_FILE: ClaudeTalk/App/Info.plist
         SWIFT_OBJC_BRIDGING_HEADER: "ClaudeTalk-Bridging-Header.h"
-        CODE_SIGN_IDENTITY: "-"
-        CODE_SIGNING_REQUIRED: "NO"
-        CODE_SIGN_ENTITLEMENTS: ""
-        ENABLE_HARDENED_RUNTIME: "NO"
+        CODE_SIGN_IDENTITY: "Developer ID Application: CHENG HAO KUO (YWM35G3G8G)"
+        CODE_SIGNING_REQUIRED: "YES"
+        DEVELOPMENT_TEAM: "YWM35G3G8G"
+        ENABLE_HARDENED_RUNTIME: "YES"
+        CODE_SIGN_ENTITLEMENTS: "ClaudeTalk/ClaudeTalk.entitlements"
         HEADER_SEARCH_PATHS:
           - "$(SRCROOT)/whisper.cpp/include"
           - "$(SRCROOT)/whisper.cpp/ggml/include"

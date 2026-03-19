@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 APP_NAME="ClaudeTalk"
-VERSION="1.1.0"
+VERSION="1.2.0"
 BUILD_DIR="build/release"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 DMG_NAME="$APP_NAME-$VERSION.dmg"
@@ -58,9 +58,10 @@ chmod +x "$RESOURCES/transcribe_server_dist/transcribe_server"
 # Step 4: Remove development files from Resources
 rm -f "$RESOURCES/transcribe_server.py" 2>/dev/null || true
 
-# Step 6: Ad-hoc code sign
-echo ">>> Code signing..."
-codesign --force --deep --sign - "$APP_BUNDLE"
+# Step 6: Code sign with Developer ID
+SIGN_IDENTITY="Developer ID Application: CHENG HAO KUO (YWM35G3G8G)"
+echo ">>> Code signing with: $SIGN_IDENTITY"
+codesign --force --deep --sign "$SIGN_IDENTITY" --options runtime "$APP_BUNDLE"
 
 # Step 7: Create DMG
 echo ">>> Creating DMG..."
