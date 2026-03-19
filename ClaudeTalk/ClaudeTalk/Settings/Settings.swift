@@ -32,12 +32,17 @@ final class Settings {
     }
 
     var modelSize: String {
-        get { defaults.string(forKey: Key.modelSize) ?? "base" }
+        get { defaults.string(forKey: Key.modelSize) ?? "small" }
         set { defaults.set(newValue, forKey: Key.modelSize) }
     }
 
     var language: String? {
-        get { defaults.string(forKey: Key.language) }
+        get {
+            if defaults.object(forKey: Key.language) == nil {
+                return "zh"
+            }
+            return defaults.string(forKey: Key.language)
+        }
         set { defaults.set(newValue, forKey: Key.language) }
     }
 

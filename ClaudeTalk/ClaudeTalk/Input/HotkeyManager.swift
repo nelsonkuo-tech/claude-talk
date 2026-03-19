@@ -78,6 +78,7 @@ class HotkeyManager {
 
     private func handleEvent(type: CGEventType, event: CGEvent) {
         let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
+        NSLog("[ClaudeTalk] Event type=%d keyCode=%d target=%d flags=0x%llx", type.rawValue, keyCode, targetKeyCode, event.flags.rawValue)
 
         switch type {
         case .flagsChanged:

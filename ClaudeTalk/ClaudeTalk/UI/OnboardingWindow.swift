@@ -143,7 +143,7 @@ class OnboardingWindow: NSWindowController {
     }
 
     private func promptAccessibility() {
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeRetainedValue(): true]
+        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true]
         AXIsProcessTrustedWithOptions(options)
     }
 

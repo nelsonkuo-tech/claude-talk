@@ -9,58 +9,38 @@ class AudioEngine {
     weak var delegate: AudioEngineDelegate?
     private let engine = AVAudioEngine()
     private var buffer = [Float]()
-    private let sampleRate: Double = 16000
     private let lock = NSLock()
+    private(set) var nativeSampleRate: Double = 48000
     var isRecording: Bool { engine.isRunning }
 
     func startRecording() throws {
         let inputNode = engine.inputNode
         let inputFormat = inputNode.inputFormat(forBus: 0)
+        nativeSampleRate = inputFormat.sampleRate
 
-        guard let targetFormat = AVAudioFormat(
+        NSLog("[ClaudeTalk] AudioEngine: native format = %@ Hz, %d ch",
+              String(format: "%.0f", nativeSampleRate), inputFormat.channelCount)
+
+        // Record in mono float32 at native sample rate (no conversion = no data loss)
+        guard let monoFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
-            sampleRate: sampleRate,
+            sampleRate: nativeSampleRate,
             channels: 1,
             interleaved: false
         ) else {
             throw AudioEngineError.formatCreationFailed
         }
 
-        guard let converter = AVAudioConverter(from: inputFormat, to: targetFormat) else {
-            throw AudioEngineError.converterCreationFailed
-        }
-
         lock.lock()
         buffer.removeAll()
         lock.unlock()
 
-        let outputFrameCapacity: AVAudioFrameCount = 1024
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { [weak self] inputBuffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: monoFormat) { [weak self] pcmBuffer, _ in
             guard let self = self else { return }
 
-            guard let outputBuffer = AVAudioPCMBuffer(
-                pcmFormat: targetFormat,
-                frameCapacity: outputFrameCapacity
-            ) else { return }
-
-            var error: NSError?
-            var inputConsumed = false
-
-            let status = converter.convert(to: outputBuffer, error: &error) { _, outStatus in
-                if inputConsumed {
-                    outStatus.pointee = .noDataNow
-                    return nil
-                }
-                inputConsumed = true
-                outStatus.pointee = .haveData
-                return inputBuffer
-            }
-
-            guard status != .error, error == nil else { return }
-
-            let frameCount = Int(outputBuffer.frameLength)
+            let frameCount = Int(pcmBuffer.frameLength)
             guard frameCount > 0,
-                  let channelData = outputBuffer.floatChannelData?[0] else { return }
+                  let channelData = pcmBuffer.floatChannelData?[0] else { return }
 
             let samples = Array(UnsafeBufferPointer(start: channelData, count: frameCount))
 
@@ -78,7 +58,7 @@ class AudioEngine {
         try engine.start()
     }
 
-    func stopRecording() -> (samples: [Float], duration: Double)? {
+    func stopRecording() -> (samples: [Float], duration: Double, sampleRate: Double)? {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
 
@@ -89,8 +69,8 @@ class AudioEngine {
 
         guard !captured.isEmpty else { return nil }
 
-        let duration = Double(captured.count) / sampleRate
-        return (samples: captured, duration: duration)
+        let duration = Double(captured.count) / nativeSampleRate
+        return (samples: captured, duration: duration, sampleRate: nativeSampleRate)
     }
 
     static func calculateRMS(_ samples: [Float]) -> Float {
@@ -102,14 +82,11 @@ class AudioEngine {
 
 enum AudioEngineError: Error, LocalizedError {
     case formatCreationFailed
-    case converterCreationFailed
 
     var errorDescription: String? {
         switch self {
         case .formatCreationFailed:
-            return "Failed to create 16kHz mono float32 audio format"
-        case .converterCreationFailed:
-            return "Failed to create audio format converter"
+            return "Failed to create audio format"
         }
     }
 }
