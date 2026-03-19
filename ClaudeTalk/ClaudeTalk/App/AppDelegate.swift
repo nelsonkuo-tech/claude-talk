@@ -40,24 +40,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, MenuBarDelegate, OnboardingD
     // MARK: - Accessibility
 
     private func promptAccessibility() {
-        // Show system prompt
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true]
         AXIsProcessTrustedWithOptions(options)
-
-        // Also open System Settings directly to Accessibility pane
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                NSWorkspace.shared.open(url)
-            }
-        }
-
-        // Show notification
-        let alert = NSAlert()
-        alert.messageText = "Accessibility Permission Required"
-        alert.informativeText = "Claude Talk needs Accessibility permission to capture hotkeys.\n\nPlease enable Claude Talk in:\nSystem Settings → Privacy & Security → Accessibility"
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
     }
 
     private func startAccessibilityMonitor() {

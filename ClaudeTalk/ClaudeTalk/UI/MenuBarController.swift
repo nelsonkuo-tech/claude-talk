@@ -12,16 +12,24 @@ class MenuBarController {
 
     func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem?.button?.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Claude Talk")
+        if let icon = NSImage(named: "MenuBarIcon") {
+            icon.isTemplate = true
+            icon.size = NSSize(width: 18, height: 18)
+            statusItem?.button?.image = icon
+        }
         statusItem?.menu = buildMenu()
     }
 
     func showPermissionWarning() {
-        statusItem?.button?.image = NSImage(systemSymbolName: "mic.badge.xmark", accessibilityDescription: "Permission needed")
+        statusItem?.button?.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: "Permission needed")
     }
 
     func clearPermissionWarning() {
-        statusItem?.button?.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Claude Talk")
+        if let icon = NSImage(named: "MenuBarIcon") {
+            icon.isTemplate = true
+            icon.size = NSSize(width: 18, height: 18)
+            statusItem?.button?.image = icon
+        }
     }
 
     // MARK: - Menu Building
