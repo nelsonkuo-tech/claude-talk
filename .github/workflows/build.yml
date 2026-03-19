@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate project
+        working-directory: ClaudeTalk
+        run: xcodegen generate
+
+      - name: Build
+        working-directory: ClaudeTalk
+        run: |
+          xcodebuild -project ClaudeTalk.xcodeproj \
+            -scheme ClaudeTalk \
+            -configuration Release \
+            -derivedDataPath build \
+            build
+
+      - name: Run tests
+        working-directory: ClaudeTalk
+        run: |
+          xcodebuild test -project ClaudeTalk.xcodeproj \
+            -scheme ClaudeTalk \
+            -destination 'platform=macOS'
+
+      - name: Package DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ClaudeTalk
+        run: |
+          chmod +x build.sh package-dmg.sh
+          ./build.sh
+          ./package-dmg.sh
+
+      - name: Upload DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ClaudeTalk/build/*.dmg
