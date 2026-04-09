@@ -102,8 +102,20 @@ class NotchOverlay {
 
     private func showPanel() {
         guard let panel = panel else { return }
+        repositionPanel()
         panel.alphaValue = 1
         panel.orderFront(nil)
+    }
+
+    private func repositionPanel() {
+        guard let panel = panel, let screen = NSScreen.main else { return }
+        let screenFrame = screen.frame
+        let notchHeight = screen.safeAreaInsets.top
+        let origin = NSPoint(
+            x: screenFrame.origin.x + (screenFrame.width - panelWidth) / 2,
+            y: screenFrame.maxY - notchHeight - panelHeight - 4
+        )
+        panel.setFrameOrigin(origin)
     }
 
     private func hidePanel(animated: Bool = true) {
