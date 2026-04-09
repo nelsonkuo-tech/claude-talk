@@ -12,9 +12,8 @@ class MenuBarController {
 
     func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        if let icon = NSImage(named: "MenuBarIcon") {
+        if let icon = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Claude Talk") {
             icon.isTemplate = true
-            icon.size = NSSize(width: 18, height: 18)
             statusItem?.button?.image = icon
         }
         statusItem?.menu = buildMenu()
@@ -25,9 +24,8 @@ class MenuBarController {
     }
 
     func clearPermissionWarning() {
-        if let icon = NSImage(named: "MenuBarIcon") {
+        if let icon = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Claude Talk") {
             icon.isTemplate = true
-            icon.size = NSSize(width: 18, height: 18)
             statusItem?.button?.image = icon
         }
     }
