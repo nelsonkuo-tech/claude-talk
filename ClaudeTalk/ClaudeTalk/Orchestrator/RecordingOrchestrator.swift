@@ -14,7 +14,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
     private let modelManager = ModelManager()
     private var isTranscribing = false
     private var isToggleRecording = false  // tracks toggle mode state
-    private var isLLMMode = false
+    private var isLLMMode = true  // always use LLM polish when API key is set
     private let llmService = LLMService()
 
     init() {
@@ -83,7 +83,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             do {
                 try audioEngine.startRecording()
                 isToggleRecording = true
-                isLLMMode = withOption
+                // isLLMMode is always true — LLM polish enabled by default
             } catch {
                 NSLog("[ClaudeTalk] Recording failed: %@", error.localizedDescription)
                 notchOverlay.state = .error
