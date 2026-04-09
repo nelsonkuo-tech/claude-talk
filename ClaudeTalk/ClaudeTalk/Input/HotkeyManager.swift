@@ -2,7 +2,7 @@ import CoreGraphics
 import Foundation
 
 protocol HotkeyManagerDelegate: AnyObject {
-    func hotkeyDidPress()
+    func hotkeyDidPress(withOption: Bool)
     func hotkeyDidRelease()
 }
 
@@ -103,8 +103,9 @@ class HotkeyManager {
 
             if isModifierDown && !isPressed {
                 isPressed = true
+                let hasOption = event.flags.contains(.maskAlternate)
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.hotkeyDidPress()
+                    self?.delegate?.hotkeyDidPress(withOption: hasOption)
                 }
             } else if !isModifierDown && isPressed {
                 isPressed = false
@@ -116,8 +117,9 @@ class HotkeyManager {
         case .keyDown:
             guard keyCode == targetKeyCode, !isPressed else { return }
             isPressed = true
+            let hasOption = event.flags.contains(.maskAlternate)
             DispatchQueue.main.async { [weak self] in
-                self?.delegate?.hotkeyDidPress()
+                self?.delegate?.hotkeyDidPress(withOption: hasOption)
             }
 
         case .keyUp:
