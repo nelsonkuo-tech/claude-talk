@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum RecordingUIState {
-    case idle, recording, transcribing, done, error
+    case idle, recording, transcribing, polishing, done, error
 }
 
 @Observable
@@ -44,6 +44,10 @@ class RecordingPillModel {
 
         case .transcribing:
             state = .transcribing
+            startPulse()
+
+        case .polishing:
+            state = .polishing
             startPulse()
 
         case .done:

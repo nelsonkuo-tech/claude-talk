@@ -12,7 +12,7 @@ struct RecordingPillView: View {
     private let activeGreen = Color(red: 0.3, green: 0.95, blue: 0.4)
 
     var body: some View {
-        let isActive = model.state == .recording || model.state == .transcribing
+        let isActive = model.state == .recording || model.state == .transcribing || model.state == .polishing
 
         GlassEffectContainer {
             HStack(spacing: 10) {
@@ -54,6 +54,10 @@ struct RecordingPillView: View {
             Image(systemName: "mic.fill")
                 .foregroundStyle(activeGreen)
                 .symbolEffect(.pulse, isActive: model.state == .transcribing)
+        case .polishing:
+            Image(systemName: "sparkles")
+                .foregroundStyle(.purple)
+                .symbolEffect(.pulse, isActive: true)
         case .done:
             Image(systemName: "checkmark")
                 .foregroundStyle(activeGreen)

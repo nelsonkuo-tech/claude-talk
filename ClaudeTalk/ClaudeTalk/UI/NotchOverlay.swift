@@ -75,6 +75,9 @@ class NotchOverlay {
         case .transcribing:
             model.transitionTo(.transcribing)
 
+        case .polishing:
+            model.transitionTo(.polishing)
+
         case .success:
             model.transitionTo(.done)
             NSSound(named: "Pop")?.play()
@@ -132,5 +135,5 @@ class NotchOverlay {
 }
 
 enum NotchState: Int {
-    case idle = 0, recording = 1, transcribing = 2, success = 3, error = 4, discarded = 5
+    case idle = 0, recording = 1, transcribing = 2, polishing = 3, success = 4, error = 5, discarded = 6
 }
