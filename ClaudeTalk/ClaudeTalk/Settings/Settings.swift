@@ -103,6 +103,12 @@ final class Settings {
         set { defaults.set(newValue, forKey: "glassStyle") }
     }
 
+    // LLM mode: "polish" (default) or "translate"
+    var llmMode: String {
+        get { defaults.string(forKey: "llmMode") ?? "polish" }
+        set { defaults.set(newValue, forKey: "llmMode") }
+    }
+
     // Allow voice input in all apps, not just terminals
     var allowAllApps: Bool {
         get {

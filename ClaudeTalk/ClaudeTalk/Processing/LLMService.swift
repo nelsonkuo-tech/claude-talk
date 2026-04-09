@@ -25,10 +25,20 @@ class LLMService {
     // MARK: - Prompt
 
     private func buildPrompt(_ text: String) -> String {
+        let mode = settings.llmMode
+
+        if mode == "translate" {
+            return buildTranslatePrompt(text)
+        } else {
+            return buildPolishPrompt(text)
+        }
+    }
+
+    private func buildPolishPrompt(_ text: String) -> String {
         let targetLang = settings.llmTargetLanguage
         let langLine: String
         if let lang = targetLang, !lang.isEmpty {
-            langLine = "\n6. 整理后翻译为\(lang)"
+            langLine = "\n8. 整理后翻译为\(lang)"
         } else {
             langLine = ""
         }
@@ -46,6 +56,26 @@ class LLMService {
         7. 根据语意分段，每个段落聚焦一个主题\(langLine)
 
         无论原文长短，都直接输出整理后的文字。禁止回复任何说明、提问、建议或前缀。如果原文很短，整理后直接输出即可。
+
+        原文：
+        \(text)
+        """
+    }
+
+    private func buildTranslatePrompt(_ text: String) -> String {
+        let targetLang = settings.llmTargetLanguage ?? "English"
+
+        return """
+        你是语音翻译助手。以下文本来自语音识别，可能包含识别错误。
+
+        请执行：
+        1. 先根据上下文修正语音识别错误
+        2. 将内容翻译为\(targetLang)
+        3. 翻译要自然流畅，保留原意和说话者的语气
+        4. 正确使用标点符号
+        5. 当原文提到多个要点时，翻译后也用 bullet point（- ）列出
+
+        只输出翻译后的文字，不要输出原文，不要加任何说明或前缀。
 
         原文：
         \(text)
