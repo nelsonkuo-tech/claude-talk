@@ -265,6 +265,9 @@ class MenuBarController {
     @objc private func selectAIMode(_ sender: NSMenuItem) {
         guard let value = sender.representedObject as? String else { return }
         settings.llmMode = value
+        if value == "polish" {
+            settings.llmTargetLanguage = nil  // clear translation language
+        }
         rebuildMenu()
     }
 
