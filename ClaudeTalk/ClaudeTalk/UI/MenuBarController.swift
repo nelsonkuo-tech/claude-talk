@@ -101,11 +101,11 @@ class MenuBarController {
         fillerItem.state = settings.removeFillerWords ? .on : .off
         menu.addItem(fillerItem)
 
-        // AI Mode
-        let modeDisplay = settings.llmMode == "translate" ? "Translate → \(settings.llmTargetLanguage ?? "English")" : "Polish"
+        // Translation
+        let transDisplay = (settings.llmTargetLanguage != nil && !settings.llmTargetLanguage!.isEmpty) ? "→ \(settings.llmTargetLanguage!)" : "Off"
         menu.addItem(makeSubmenuItem(
-            title: "AI Mode: \(modeDisplay)",
-            submenu: buildAIModeMenu()
+            title: "Translation: \(transDisplay)",
+            submenu: buildTranslationMenu()
         ))
 
         // Edit Dictionary
@@ -229,52 +229,42 @@ class MenuBarController {
         return menu
     }
 
-    private func buildAIModeMenu() -> NSMenu {
+    private func buildTranslationMenu() -> NSMenu {
         let menu = NSMenu()
+        let currentLang = settings.llmTargetLanguage
 
-        // Polish (default)
-        let polishItem = NSMenuItem(title: "Polish (整理)", action: #selector(selectAIMode(_:)), keyEquivalent: "")
-        polishItem.target = self
-        polishItem.representedObject = "polish"
-        polishItem.state = settings.llmMode == "polish" ? .on : .off
-        menu.addItem(polishItem)
+        // Off
+        let offItem = NSMenuItem(title: "Off (原语言输出)", action: #selector(selectTranslation(_:)), keyEquivalent: "")
+        offItem.target = self
+        offItem.representedObject = "" as String
+        offItem.state = (currentLang == nil || currentLang!.isEmpty) ? .on : .off
+        menu.addItem(offItem)
 
         menu.addItem(.separator())
 
-        // Translate options
-        let translateLangs: [(label: String, code: String)] = [
-            ("Translate → English", "English"),
-            ("Translate → 繁體中文", "繁體中文"),
-            ("Translate → 简体中文", "简体中文"),
-            ("Translate → 日本語", "日本語"),
-            ("Translate → 한국어", "한국어"),
-            ("Translate → Español", "Español"),
-            ("Translate → Français", "Français"),
+        let langs: [(label: String, code: String)] = [
+            ("English", "English"),
+            ("繁體中文", "繁體中文"),
+            ("简体中文", "简体中文"),
+            ("日本語", "日本語"),
+            ("한국어", "한국어"),
+            ("Español", "Español"),
+            ("Français", "Français"),
         ]
-        for lang in translateLangs {
-            let item = NSMenuItem(title: lang.label, action: #selector(selectTranslateMode(_:)), keyEquivalent: "")
+        for lang in langs {
+            let item = NSMenuItem(title: lang.label, action: #selector(selectTranslation(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = lang.code
-            item.state = (settings.llmMode == "translate" && settings.llmTargetLanguage == lang.code) ? .on : .off
+            item.state = currentLang == lang.code ? .on : .off
             menu.addItem(item)
         }
 
         return menu
     }
 
-    @objc private func selectAIMode(_ sender: NSMenuItem) {
+    @objc private func selectTranslation(_ sender: NSMenuItem) {
         guard let value = sender.representedObject as? String else { return }
-        settings.llmMode = value
-        if value == "polish" {
-            settings.llmTargetLanguage = nil  // clear translation language
-        }
-        rebuildMenu()
-    }
-
-    @objc private func selectTranslateMode(_ sender: NSMenuItem) {
-        guard let lang = sender.representedObject as? String else { return }
-        settings.llmMode = "translate"
-        settings.llmTargetLanguage = lang
+        settings.llmTargetLanguage = value.isEmpty ? nil : value
         rebuildMenu()
     }
 
