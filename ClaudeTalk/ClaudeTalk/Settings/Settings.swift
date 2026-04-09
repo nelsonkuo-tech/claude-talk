@@ -102,4 +102,31 @@ final class Settings {
         get { defaults.string(forKey: "glassStyle") ?? "auto" }
         set { defaults.set(newValue, forKey: "glassStyle") }
     }
+
+    // MARK: - LLM Polish
+
+    var llmProvider: String {
+        get { defaults.string(forKey: "llmProvider") ?? "anthropic" }
+        set { defaults.set(newValue, forKey: "llmProvider") }
+    }
+
+    var llmApiKey: String {
+        get { defaults.string(forKey: "llmApiKey") ?? "" }
+        set { defaults.set(newValue, forKey: "llmApiKey") }
+    }
+
+    var llmModel: String {
+        get { defaults.string(forKey: "llmModel") ?? "claude-haiku-4-5-20251001" }
+        set { defaults.set(newValue, forKey: "llmModel") }
+    }
+
+    var llmBaseURL: String {
+        get { defaults.string(forKey: "llmBaseURL") ?? "https://api.anthropic.com" }
+        set { defaults.set(newValue, forKey: "llmBaseURL") }
+    }
+
+    var llmTargetLanguage: String? {
+        get { defaults.string(forKey: "llmTargetLanguage") }
+        set { defaults.set(newValue, forKey: "llmTargetLanguage") }
+    }
 }
