@@ -6,9 +6,11 @@ struct TerminalDetector {
     ]
 
     private let whitelist: Set<String>
+    private let allowAllApps: Bool
 
-    init(whitelist: [String]? = nil) {
+    init(whitelist: [String]? = nil, allowAllApps: Bool = false) {
         self.whitelist = Set((whitelist ?? Self.defaultWhitelist).map { $0.lowercased() })
+        self.allowAllApps = allowAllApps
     }
 
     func isTerminal(_ appName: String) -> Bool {
@@ -16,6 +18,7 @@ struct TerminalDetector {
     }
 
     func isFocusedAppTerminal() -> Bool {
+        if allowAllApps { return true }
         guard let app = NSWorkspace.shared.frontmostApplication else { return false }
         let name = app.localizedName ?? ""
         return isTerminal(name)

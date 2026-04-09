@@ -19,7 +19,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
     init() {
         hotkeyManager = HotkeyManager(hotkey: settings.hotkey)
-        terminalDetector = TerminalDetector(whitelist: settings.terminalWhitelist)
+        terminalDetector = TerminalDetector(whitelist: settings.terminalWhitelist, allowAllApps: settings.allowAllApps)
         audioEngine.delegate = self
         hotkeyManager.delegate = self
     }

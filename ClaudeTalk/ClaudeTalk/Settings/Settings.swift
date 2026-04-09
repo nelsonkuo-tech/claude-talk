@@ -103,6 +103,17 @@ final class Settings {
         set { defaults.set(newValue, forKey: "glassStyle") }
     }
 
+    // Allow voice input in all apps, not just terminals
+    var allowAllApps: Bool {
+        get {
+            if defaults.object(forKey: "allowAllApps") == nil {
+                return true  // default: enabled
+            }
+            return defaults.bool(forKey: "allowAllApps")
+        }
+        set { defaults.set(newValue, forKey: "allowAllApps") }
+    }
+
     // MARK: - LLM Polish
 
     var llmProvider: String {
