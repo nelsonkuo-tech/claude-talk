@@ -1,28 +1,28 @@
 # Claude Talk
 
-Press-to-talk voice input for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+Voice input for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and any app on your Mac.
 
-Hold a key, speak, release — your voice is transcribed locally and pasted directly into the terminal. Everything runs on-device with no API keys, no cloud calls, and no data leaving your machine.
+Speak naturally — your voice is transcribed locally, polished by AI, and pasted into the focused app. Works in terminals, Notes, chat apps, and more. Transcription runs on-device; optional AI polish uses your own API key.
 
 > **macOS 26+ only** (Apple Silicon)
 
 ## Download
 
-**[Download Claude Talk v1.2.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.2.0/ClaudeTalk-1.2.0.dmg)**
+**[Download Claude Talk v1.3.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.0)**
 
 Open the DMG, drag ClaudeTalk to Applications, done.
 
 ---
 
-**Claude Talk** — 為 Claude Code 打造的按鍵語音輸入工具。
+**Claude Talk** — Mac 上的語音輸入工具，為 Claude Code 及所有 App 打造。
 
-按住快捷鍵說話、放開即完成轉錄，文字自動貼入終端機。所有語音辨識都在本機完成，不需要 API key，不上傳任何資料。
+對著麥克風說話，語音在本機轉錄後由 AI 潤飾，自動貼入當前 App。支援終端機、備忘錄、聊天軟體等。語音辨識完全在裝置上執行；AI 潤飾使用你自己的 API key。
 
 > **僅支援 macOS 26+**（Apple Silicon）
 
 ## 下載
 
-**[下載 Claude Talk v1.2.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/download/v1.2.0/ClaudeTalk-1.2.0.dmg)**
+**[下載 Claude Talk v1.3.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.0)**
 
 打開 DMG，將 ClaudeTalk 拖入 Applications 資料夾即可。
 
@@ -32,28 +32,32 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 
 - **Native macOS app** — menu bar icon, no terminal window needed
 - **macOS 26 Liquid Glass UI** — pill-shaped overlay with real-time FFT waveform
+- **Works in any app** — terminals, Notes, Keynote, chat apps, and more
+- **AI polish (always-on)** — cleans up filler words and grammar via LLM
+- **Translation mode** — speak in any language, output in your target language
 - **Two recording modes** — hold-to-record or tap-to-toggle
 - **Glass style options** — Auto (follow background), Light Glass, Dark Glass
 - **Local speech-to-text** via [faster-whisper](https://github.com/SYSTRAN/faster-whisper), supports 90+ languages
 - **~0.5s transcription latency** on Apple Silicon
-- **Terminal-aware** — only pastes when a supported terminal is focused
-- **Customizable** — hotkey, model size, language, terminal whitelist
+- **Multi-display aware** — overlay follows your active screen
+- **Customizable** — hotkey, model size, language, app whitelist
 
 ## Usage
 
 1. Launch ClaudeTalk — mic icon appears in menu bar
 2. Grant **Accessibility** and **Microphone** permissions when prompted
-3. Focus on a terminal (Ghostty, iTerm2, Terminal, Warp, Kitty, etc.)
-4. **Hold fn key**, speak, **release** — text is transcribed and pasted
+3. Focus on any supported app (terminals, Notes, chat apps, etc.)
+4. **Press hotkey**, speak, **press again** — text is transcribed, polished, and pasted
 
 ### Menu Bar Settings
 
 - **Hotkey** — fn, Option, F5-F12
+- **AI Mode** — Polish (clean up speech) or Translate (to target language)
 - **Model** — tiny, base, small, medium
 - **Language** — Auto, English, 中文, 日本語, 한국어, Español
 - **Recording mode** — Hold to Record / Tap to Start-Stop
 - **Appearance** — Auto, Light Glass, Dark Glass
-- **Terminals** — whitelist of supported terminal apps
+- **Apps** — whitelist of supported apps (terminals + any app you add)
 
 ## CLI Version
 
