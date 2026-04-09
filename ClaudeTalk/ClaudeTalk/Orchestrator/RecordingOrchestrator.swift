@@ -14,6 +14,8 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
     private let modelManager = ModelManager()
     private var isTranscribing = false
     private var isToggleRecording = false  // tracks toggle mode state
+    private var isLLMMode = false
+    private let llmService = LLMService()
 
     init() {
         hotkeyManager = HotkeyManager(hotkey: settings.hotkey)
@@ -60,8 +62,8 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
     // MARK: - HotkeyManagerDelegate
 
-    func hotkeyDidPress() {
-        NSLog("[ClaudeTalk] Hotkey pressed!")
+    func hotkeyDidPress(withOption: Bool) {
+        NSLog("[ClaudeTalk] Hotkey pressed! option=%@", withOption ? "YES" : "NO")
 
         if settings.recordingMode == "toggle" {
             // Toggle mode: press once to start, press again to stop
@@ -81,6 +83,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             do {
                 try audioEngine.startRecording()
                 isToggleRecording = true
+                isLLMMode = withOption
             } catch {
                 NSLog("[ClaudeTalk] Recording failed: %@", error.localizedDescription)
                 notchOverlay.state = .error
@@ -98,6 +101,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
         do {
             try audioEngine.startRecording()
+            isLLMMode = withOption
         } catch {
             NSLog("[ClaudeTalk] Recording failed: %@", error.localizedDescription)
             notchOverlay.state = .error
@@ -232,6 +236,29 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             return
         }
 
+        if isLLMMode && !settings.llmApiKey.isEmpty {
+            notchOverlay.state = .polishing
+            llmService.polish(text) { [weak self] result in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    let finalText: String
+                    switch result {
+                    case .success(let polished):
+                        NSLog("[ClaudeTalk] LLM polish succeeded (%d → %d chars)", text.count, polished.count)
+                        finalText = polished
+                    case .failure(let error):
+                        NSLog("[ClaudeTalk] LLM polish failed: %@, using raw text", error.localizedDescription)
+                        finalText = text
+                    }
+                    self.pasteResult(finalText)
+                }
+            }
+        } else {
+            pasteResult(text)
+        }
+    }
+
+    private func pasteResult(_ text: String) {
         guard terminalDetector.isFocusedAppTerminal() else {
             notchOverlay.state = .error
             return
