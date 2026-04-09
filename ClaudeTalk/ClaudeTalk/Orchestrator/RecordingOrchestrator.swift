@@ -101,7 +101,7 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
 
         do {
             try audioEngine.startRecording()
-            isLLMMode = withOption
+            // isLLMMode is always true — LLM polish enabled by default
         } catch {
             NSLog("[ClaudeTalk] Recording failed: %@", error.localizedDescription)
             notchOverlay.state = .error
