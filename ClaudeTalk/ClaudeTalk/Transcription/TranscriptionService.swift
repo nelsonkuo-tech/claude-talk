@@ -7,6 +7,8 @@ class TranscriptionService {
     private var isReady = false
     private let transcribeLock = NSLock()
     private var readyMarkerPath: String
+    private var consecutiveFailures = 0
+    private let maxConsecutiveFailures = 2
 
     private var executablePath: String
     private var language: String?
@@ -112,6 +114,11 @@ class TranscriptionService {
         transcribeLock.lock()
         defer { transcribeLock.unlock() }
 
+        if let process = process, !process.isRunning {
+            NSLog("[ClaudeTalk] TranscriptionService: daemon died, restarting...")
+            restart()
+        }
+
         guard let process = process, process.isRunning,
               let stdin = stdinHandle, let stdout = stdoutHandle else {
             NSLog("[ClaudeTalk] TranscriptionService: daemon not running")
@@ -133,7 +140,9 @@ class TranscriptionService {
             let chunk = stdout.availableData
             if chunk.isEmpty {
                 // EOF - process died
-                NSLog("[ClaudeTalk] TranscriptionService: daemon EOF")
+                NSLog("[ClaudeTalk] TranscriptionService: daemon EOF, restarting...")
+                consecutiveFailures += 1
+                restart()
                 return nil
             }
             result.append(chunk)
@@ -142,13 +151,40 @@ class TranscriptionService {
                 let text = str.trimmingCharacters(in: .whitespacesAndNewlines)
                 let elapsed = Date().timeIntervalSince(startTime)
                 NSLog("[ClaudeTalk] TranscriptionService: transcribed in %.2fs: %@", elapsed, text)
+
+                // Detect stale daemon: instant empty response means pipe is broken
+                if text.isEmpty && elapsed < 0.05 {
+                    consecutiveFailures += 1
+                    NSLog("[ClaudeTalk] TranscriptionService: suspect stale daemon (%d/%d)",
+                          consecutiveFailures, maxConsecutiveFailures)
+                    if consecutiveFailures >= maxConsecutiveFailures {
+                        NSLog("[ClaudeTalk] TranscriptionService: restarting stale daemon...")
+                        restart()
+                    }
+                    return nil
+                }
+
+                consecutiveFailures = 0
                 return text.isEmpty ? nil : text
             }
 
             if Date().timeIntervalSince(startTime) > 15 {
-                NSLog("[ClaudeTalk] TranscriptionService: timeout")
+                NSLog("[ClaudeTalk] TranscriptionService: timeout, restarting...")
+                consecutiveFailures += 1
+                restart()
                 return nil
             }
+        }
+    }
+
+    private func restart() {
+        NSLog("[ClaudeTalk] TranscriptionService: restarting daemon...")
+        stop()
+        consecutiveFailures = 0
+        if start() {
+            NSLog("[ClaudeTalk] TranscriptionService: daemon restarted successfully")
+        } else {
+            NSLog("[ClaudeTalk] TranscriptionService: daemon restart FAILED")
         }
     }
 

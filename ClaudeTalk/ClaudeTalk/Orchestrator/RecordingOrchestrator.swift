@@ -189,8 +189,10 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
                 return
             }
 
-            // Build prompt hint from recent transcriptions
-            let promptHint = self.recentTranscriptions.joined(separator: "。")
+            // Build prompt hint: fixed vocabulary + recent transcriptions
+            let fixedVocab = "Claude Code, Claude Talk, GitHub, commit, push, pull, deploy, API, PR, terminal, Ghostty"
+            let recentContext = self.recentTranscriptions.joined(separator: "。")
+            let promptHint = recentContext.isEmpty ? fixedVocab : fixedVocab + "。" + recentContext
 
             let rawText = service.transcribe(wavPath: path, promptHint: promptHint.isEmpty ? nil : promptHint) ?? ""
 
@@ -241,8 +243,9 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             return
         }
 
-        // Skip LLM polish for very short text — not enough context to improve
-        if isLLMMode && !settings.llmApiKey.isEmpty && text.count > 15 {
+        // Skip LLM polish for very short text — but always run LLM in translate mode
+        let hasTranslation = settings.llmTargetLanguage != nil && !settings.llmTargetLanguage!.isEmpty
+        if isLLMMode && !settings.llmApiKey.isEmpty && (text.count > 15 || hasTranslation) {
             notchOverlay.state = .polishing
             let appName = NSWorkspace.shared.frontmostApplication?.localizedName
             llmService.polish(text, appName: appName, recentContext: recentTranscriptions) { [weak self] result in
@@ -253,12 +256,17 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
                     case .success(let polished):
                         NSLog("[ClaudeTalk] LLM polish succeeded (%d → %d chars)", text.count, polished.count)
                         // Guard: if LLM added too many characters, it's hallucinating — use raw text
-                        let maxAllowed = max(text.count + 5, Int(Double(text.count) * 1.3))
-                        if polished.count > maxAllowed {
-                            NSLog("[ClaudeTalk] LLM output too long (%d > %d), using raw text", polished.count, maxAllowed)
-                            finalText = text
-                        } else {
+                        // Skip length check in translate mode (translation naturally changes length)
+                        if hasTranslation {
                             finalText = polished
+                        } else {
+                            let maxAllowed = max(text.count + 5, Int(Double(text.count) * 1.3))
+                            if polished.count > maxAllowed {
+                                NSLog("[ClaudeTalk] LLM output too long (%d > %d), using raw text", polished.count, maxAllowed)
+                                finalText = text
+                            } else {
+                                finalText = polished
+                            }
                         }
                     case .failure(let error):
                         NSLog("[ClaudeTalk] LLM polish failed: %@, using raw text", error.localizedDescription)

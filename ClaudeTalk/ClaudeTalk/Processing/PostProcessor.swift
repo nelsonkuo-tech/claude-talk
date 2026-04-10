@@ -85,9 +85,35 @@ struct PostProcessor {
 
     func process(_ text: String, enabled: Bool, dictionary: [String: String] = [:]) -> String {
         guard enabled else { return text }
-        let fillerRemoved = removeFillers(text)
+        let deduped = removeWhisperLoops(text)
+        let fillerRemoved = removeFillers(deduped)
         let dictApplied = applyDictionary(fillerRemoved, dictionary: dictionary)
         return dictApplied
+    }
+
+    /// Detect and fix Whisper hallucination loops (e.g. "Claude Talk。Claude Talk。Claude Talk。...")
+    func removeWhisperLoops(_ text: String) -> String {
+        // Split by common sentence delimiters
+        let separators = CharacterSet(charactersIn: "。，,.\n")
+        let segments = text.components(separatedBy: separators)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        guard segments.count >= 3 else { return text }
+
+        // Check if majority of segments are identical (loop detected)
+        var counts: [String: Int] = [:]
+        for seg in segments {
+            counts[seg, default: 0] += 1
+        }
+
+        if let (mostCommon, count) = counts.max(by: { $0.value < $1.value }),
+           Double(count) / Double(segments.count) > 0.5 {
+            NSLog("[ClaudeTalk] PostProcessor: detected Whisper loop ('%@' x%d), deduplicating", mostCommon, count)
+            return mostCommon
+        }
+
+        return text
     }
 
     // MARK: - Dictionary persistence

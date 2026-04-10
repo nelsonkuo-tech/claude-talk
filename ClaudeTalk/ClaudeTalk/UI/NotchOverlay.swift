@@ -39,7 +39,7 @@ class NotchOverlay {
 
         panel.level = NSWindow.Level(Int(CGShieldingWindowLevel()) + 1)
         panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -101,16 +101,30 @@ class NotchOverlay {
     // MARK: - Panel Visibility
 
     private func showPanel() {
-        guard let panel = panel else { return }
+        guard let panel = panel else {
+            NSLog("[ClaudeTalk] showPanel: panel is nil!")
+            return
+        }
         repositionPanel()
         panel.alphaValue = 1
-        panel.orderFront(nil)
+        // orderFrontRegardless works even when app is not active (e.g. fullscreen other app)
+        panel.orderFrontRegardless()
+        // Re-assert window level every time — macOS can demote it after space switches
+        panel.level = NSWindow.Level(Int(CGShieldingWindowLevel()) + 1)
+        NSLog("[ClaudeTalk] showPanel: visible=%d, onScreen=%d, level=%d, frame=%@",
+              panel.isVisible ? 1 : 0,
+              panel.screen != nil ? 1 : 0,
+              panel.level.rawValue,
+              NSStringFromRect(panel.frame))
     }
 
     private func repositionPanel() {
-        guard let panel = panel, let screen = NSScreen.main else { return }
-        let screenFrame = screen.frame
-        let notchHeight = screen.safeAreaInsets.top
+        guard let panel = panel else { return }
+        // Use the screen that has keyboard focus, fall back to main
+        let screen = NSScreen.main ?? NSScreen.screens.first
+        guard let activeScreen = screen else { return }
+        let screenFrame = activeScreen.frame
+        let notchHeight = activeScreen.safeAreaInsets.top
         let origin = NSPoint(
             x: screenFrame.origin.x + (screenFrame.width - panelWidth) / 2,
             y: screenFrame.maxY - notchHeight - panelHeight - 4
