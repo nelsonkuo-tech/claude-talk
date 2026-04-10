@@ -16,6 +16,8 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
     private var isToggleRecording = false  // tracks toggle mode state
     private var isLLMMode = true  // always use LLM polish when API key is set
     private let llmService = LLMService()
+    private var recentTranscriptions: [String] = []  // rolling buffer for Whisper prompt hint
+    private let maxRecentTranscriptions = 3
 
     init() {
         hotkeyManager = HotkeyManager(hotkey: settings.hotkey)
@@ -187,7 +189,10 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
                 return
             }
 
-            let rawText = service.transcribe(wavPath: path) ?? ""
+            // Build prompt hint from recent transcriptions
+            let promptHint = self.recentTranscriptions.joined(separator: "。")
+
+            let rawText = service.transcribe(wavPath: path, promptHint: promptHint.isEmpty ? nil : promptHint) ?? ""
 
             // Clean up temp file
             try? FileManager.default.removeItem(atPath: path)
@@ -236,16 +241,25 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
             return
         }
 
-        if isLLMMode && !settings.llmApiKey.isEmpty {
+        // Skip LLM polish for very short text — not enough context to improve
+        if isLLMMode && !settings.llmApiKey.isEmpty && text.count > 15 {
             notchOverlay.state = .polishing
-            llmService.polish(text) { [weak self] result in
+            let appName = NSWorkspace.shared.frontmostApplication?.localizedName
+            llmService.polish(text, appName: appName, recentContext: recentTranscriptions) { [weak self] result in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     let finalText: String
                     switch result {
                     case .success(let polished):
                         NSLog("[ClaudeTalk] LLM polish succeeded (%d → %d chars)", text.count, polished.count)
-                        finalText = polished
+                        // Guard: if LLM added too many characters, it's hallucinating — use raw text
+                        let maxAllowed = max(text.count + 5, Int(Double(text.count) * 1.3))
+                        if polished.count > maxAllowed {
+                            NSLog("[ClaudeTalk] LLM output too long (%d > %d), using raw text", polished.count, maxAllowed)
+                            finalText = text
+                        } else {
+                            finalText = polished
+                        }
                     case .failure(let error):
                         NSLog("[ClaudeTalk] LLM polish failed: %@, using raw text", error.localizedDescription)
                         finalText = text
@@ -262,6 +276,14 @@ class RecordingOrchestrator: HotkeyManagerDelegate, AudioEngineDelegate {
         guard terminalDetector.isFocusedAppTerminal() else {
             notchOverlay.state = .error
             return
+        }
+
+        // Update rolling buffer with final (post-LLM) text for Whisper prompt hint
+        if !text.isEmpty {
+            recentTranscriptions.append(text)
+            if recentTranscriptions.count > maxRecentTranscriptions {
+                recentTranscriptions.removeFirst()
+            }
         }
 
         InputSimulator.paste(text)

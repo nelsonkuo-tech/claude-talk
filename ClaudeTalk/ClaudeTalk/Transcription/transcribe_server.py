@@ -5,7 +5,8 @@ Loads faster-whisper model once, reads WAV file paths from stdin,
 outputs transcription text to stdout.
 
 Protocol:
-  IN:  <wav_path>\n
+  IN:  <wav_path>\n                        (no prompt hint)
+  IN:  <wav_path>\t<initial_prompt>\n      (with prompt hint)
   OUT: <transcribed_text>\n
   OUT: (empty line if no speech detected)\n
 """
@@ -47,10 +48,18 @@ def main():
         if wav_path == "QUIT":
             break
 
+        # Parse optional prompt hint: "<wav_path>\t<initial_prompt>"
+        initial_prompt = None
+        if "\t" in wav_path:
+            wav_path, initial_prompt = wav_path.split("\t", 1)
+            initial_prompt = initial_prompt.strip() or None
+
         try:
             kwargs = {"beam_size": 5}
             if language:
                 kwargs["language"] = language
+            if initial_prompt:
+                kwargs["initial_prompt"] = initial_prompt
 
             segments, info = model.transcribe(wav_path, **kwargs)
             text = "".join(seg.text for seg in segments).strip()

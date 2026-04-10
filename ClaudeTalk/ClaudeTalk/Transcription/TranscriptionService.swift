@@ -108,7 +108,7 @@ class TranscriptionService {
         return false
     }
 
-    func transcribe(wavPath: String) -> String? {
+    func transcribe(wavPath: String, promptHint: String? = nil) -> String? {
         transcribeLock.lock()
         defer { transcribeLock.unlock() }
 
@@ -118,7 +118,11 @@ class TranscriptionService {
             return nil
         }
 
-        let command = wavPath + "\n"
+        var command = wavPath
+        if let hint = promptHint, !hint.isEmpty {
+            command += "\t" + hint
+        }
+        command += "\n"
         stdin.write(command.data(using: .utf8)!)
 
         // Read response line
