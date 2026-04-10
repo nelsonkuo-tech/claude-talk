@@ -37,7 +37,7 @@ class NotchOverlay {
             defer: true
         )
 
-        panel.level = .floating
+        panel.level = NSWindow.Level(Int(CGShieldingWindowLevel()) + 1)
         panel.ignoresMouseEvents = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         panel.isOpaque = false
