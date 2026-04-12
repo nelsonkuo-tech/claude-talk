@@ -8,7 +8,7 @@ Speak naturally — your voice is transcribed locally, polished by AI, and paste
 
 ## Download
 
-**[Download Claude Talk v1.3.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.0)**
+**[Download Claude Talk v1.3.1 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.1)**
 
 Open the DMG, drag ClaudeTalk to Applications, done.
 
@@ -22,7 +22,7 @@ Open the DMG, drag ClaudeTalk to Applications, done.
 
 ## 下載
 
-**[下載 Claude Talk v1.3.0 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.0)**
+**[下載 Claude Talk v1.3.1 (.dmg)](https://github.com/nelsonkuo-tech/claude-talk/releases/tag/v1.3.1)**
 
 打開 DMG，將 ClaudeTalk 拖入 Applications 資料夾即可。
 

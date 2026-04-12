@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 APP_NAME="ClaudeTalk"
-VERSION="1.2.0"
+VERSION="1.3.1"
 BUILD_DIR="build/release"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 DMG_NAME="$APP_NAME-$VERSION.dmg"
