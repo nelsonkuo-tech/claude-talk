@@ -14,6 +14,11 @@ Protocol:
 import sys
 import os
 import warnings
+import multiprocessing
+
+# CRITICAL: freeze_support() must run before any other code when frozen by PyInstaller.
+# Without this, every multiprocessing child re-executes __main__ → fork bomb.
+multiprocessing.freeze_support()
 
 warnings.filterwarnings("ignore")
 
