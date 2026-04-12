@@ -76,4 +76,29 @@ final class PostProcessorTests: XCTestCase {
         let result = processor.process(input, enabled: true, dictionary: dictionary)
         XCTAssertEqual(result, "Claude is great")
     }
+
+    // MARK: - removeWhisperLoops regression (2026-04-13)
+
+    /// 2026-04-13 incident: user said "Hello, Hello, 我们再测试一下..." and the
+    /// loop detector collapsed the entire utterance to just "Hello", losing
+    /// the trailing sentence. Threshold tightened to count≥3 AND ratio>0.8.
+    func testIntentionalDoubledWordPreservesRest() {
+        let input = "Hello,Hello,我们再测试一下看这个功能会不会崩掉。"
+        let result = processor.removeWhisperLoops(input)
+        XCTAssertEqual(result, input, "intentionally doubled word should not collapse the surrounding sentence")
+    }
+
+    /// True Whisper hallucination loops should still be collapsed.
+    func testTrueLoopStillCollapses() {
+        let input = "Claude Talk。Claude Talk。Claude Talk。Claude Talk。Claude Talk。"
+        let result = processor.removeWhisperLoops(input)
+        XCTAssertEqual(result, "Claude Talk", "5x identical segments must be collapsed")
+    }
+
+    /// Edge case: 2x repetition is below the count≥3 threshold and must pass through.
+    func testTwoRepetitionsAreNotALoop() {
+        let input = "謝謝。謝謝。"
+        let result = processor.removeWhisperLoops(input)
+        XCTAssertEqual(result, input, "2x repetition is not enough to count as a loop")
+    }
 }

@@ -125,9 +125,16 @@ class TranscriptionService {
             return nil
         }
 
-        var command = wavPath
+        // IPC protocol uses \n as record separator and \t as field separator.
+        // Strip both from inputs to prevent protocol pollution (e.g. LLM polish
+        // output with embedded newlines being parsed as a new wav path).
+        let safePath = wavPath.replacingOccurrences(of: "\n", with: " ")
+                              .replacingOccurrences(of: "\t", with: " ")
+        var command = safePath
         if let hint = promptHint, !hint.isEmpty {
-            command += "\t" + hint
+            let safeHint = hint.replacingOccurrences(of: "\n", with: " ")
+                               .replacingOccurrences(of: "\t", with: " ")
+            command += "\t" + safeHint
         }
         command += "\n"
         stdin.write(command.data(using: .utf8)!)

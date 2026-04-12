@@ -107,8 +107,14 @@ struct PostProcessor {
             counts[seg, default: 0] += 1
         }
 
+        // Only collapse when the loop is genuinely dominant: a phrase repeated
+        // ≥3 times AND making up >80% of segments. The previous threshold
+        // (count≥2, ratio>0.5) misfired on legitimate cases like
+        // "Hello, Hello, [actual sentence]" where the user intentionally
+        // repeated a word and lost the rest of the utterance.
         if let (mostCommon, count) = counts.max(by: { $0.value < $1.value }),
-           Double(count) / Double(segments.count) > 0.5 {
+           count >= 3,
+           Double(count) / Double(segments.count) > 0.8 {
             NSLog("[ClaudeTalk] PostProcessor: detected Whisper loop ('%@' x%d), deduplicating", mostCommon, count)
             return mostCommon
         }
